@@ -21,13 +21,15 @@ def get_http_proxy():
         return default_proxy, no_proxy
 
     if os.path.isfile(proxy_config):
-        proxy_configdata = [line.strip() for line in check_output(proxy_config).decode("utf-8").splitlines()]
-        if len(proxy_configdata) >= 1:
+        if proxy_configdata := [
+            line.strip()
+            for line in check_output(proxy_config).decode("utf-8").splitlines()
+        ]:
             if not default_proxy:
                 default_proxy = proxy_configdata[0]
             if len(proxy_configdata) == 2 and not no_proxy:
                 no_proxy = proxy_configdata[1]
-    
+
     if default_proxy:
         return default_proxy, no_proxy
     print(usage, file=sys.stderr)
@@ -35,7 +37,7 @@ def get_http_proxy():
 
 
 def make_proxies(url: str, no_proxy: str):
-    proxies = {"%s_PROXY" % _: url for _ in ("HTTP", "HTTPS", "FTP", "RSYNC", "ALL")}
+    proxies = {f"{_}_PROXY": url for _ in ("HTTP", "HTTPS", "FTP", "RSYNC", "ALL")}
     proxies.update({name.lower(): value for (name, value) in proxies.items()})
     proxies["GIT_SSH"] = ssh_agent
     if no_proxy:
